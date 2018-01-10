@@ -112,6 +112,8 @@ public class MessagingService {
         }
 
         map.forEach((k, v) -> v.sort((o1, o2) -> (int) (Long.parseLong(o1.getDate()) - Long.parseLong(o2.getDate()))));
+
+
         data = map;
     }
 
@@ -119,19 +121,9 @@ public class MessagingService {
 
         ArrayList<Conversation> ret = new ArrayList<>();
 
-        data.forEach((k, v) -> ret.add(new Conversation(k, v)));
-
-//        Map<String, ArrayList<Message>> map = data;
-//
-//        List<Conversation> ret = new LinkedList<>();
-//
-//        map.entrySet()
-//                .stream()
-////                .sorted((o1, o2) -> (int) (Long.parseLong(o1.getValue().get(0).getDate()) - Long.parseLong(o2.getValue().get(0).getDate())))
-//                .sorted((o1, o2) -> (int) (Long.parseLong(o1.getValue().get(0).getDate()) - Long.parseLong(o2.getValue().get(0).getDate())))
-//                .forEach(k -> ret.add(new Conversation(k.getKey(), );
-//
-//        return ret;
+        for(Map.Entry<String, ArrayList<Message>> e: data.entrySet()){
+            ret.add(new Conversation(e.getKey(), e.getValue()));
+        }
 
         return ret;
     }

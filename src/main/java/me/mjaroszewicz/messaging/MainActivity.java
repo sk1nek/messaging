@@ -51,7 +51,10 @@ public class MainActivity extends AppCompatActivity {
 
         lv.setAdapter(tra);
         lv.setOnItemClickListener((parent, view, position, id) -> {
-            Intent i = new Intent(view.getContext(), ThreadActivity.class);
+            Intent i = new Intent(ctxt, ThreadActivity.class);
+            Bundle b = new Bundle();
+            b.putString("addr", addressList.get(position));
+            i.putExtras(b);
             ctxt.startActivity(i);
         });
 
