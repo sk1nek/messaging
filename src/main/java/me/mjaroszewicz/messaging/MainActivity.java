@@ -82,4 +82,12 @@ public class MainActivity extends AppCompatActivity {
         }
         return super.onOptionsItemSelected(item);
     }
+
+    MessagingService getMessagingServiceInstance(){
+
+        if(msgService == null)
+            msgService = new MessagingService(this);
+
+        return this.msgService;
+    }
 }
