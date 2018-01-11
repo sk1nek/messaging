@@ -7,6 +7,8 @@ import android.view.ViewGroup;
 import android.widget.BaseAdapter;
 import android.widget.TextView;
 
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.List;
 
 
@@ -20,9 +22,11 @@ public class ConversationAdapter extends BaseAdapter {
     private static LayoutInflater layoutInflater = null;
 
     public ConversationAdapter(Context context, List<Message> data){
+
         this.context = context;
         this.data = data;
 
+        Collections.reverse(this.data);
         layoutInflater = (LayoutInflater) context.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
     }
 

@@ -15,7 +15,7 @@
         android:layout_above="@+id/autoCompleteTextView"
         android:layout_centerHorizontal="true"
         android:divider="@null"
-        android:stackFromBottom="true"
+        android:stackFromBottom="false"
         tools:layout_editor_absoluteX="8dp"
         tools:layout_editor_absoluteY="8dp">
 

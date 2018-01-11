@@ -7,136 +7,190 @@ import android.net.Uri;
 import android.provider.Telephony;
 import android.util.Log;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
 
 public class MessagingService {
 
+    //TODO - get uri from base class
+
     private final Context context;
 
-    private final static Uri inboxUri = Telephony.Sms.Inbox.CONTENT_URI;
+    private final static Uri smsInboxUri = Telephony.Sms.Inbox.CONTENT_URI;
+
+    private final static Uri smsSentUri = Telephony.Sms.Sent.CONTENT_URI;
 
     private final static Uri conversationsUri = Telephony.Sms.Conversations.CONTENT_URI;
 
-    private static HashMap<String, ArrayList<Message>> data;
+    private static Map<String, List<Message>> msgMap;
 
-    private static List<Message> sent;
+    private static List<Conversation> conversations;
 
-    private static ArrayList<Conversation> conversations;
 
-    private static List<Message> inbox;
 
     MessagingService(Context context) {
         this.context = context;
 
         init();
-    }
 
-    private void fetchSent(){
+        getMessages();
 
-        ContentResolver cr = context.getContentResolver();
+        //
+        Uri u = Telephony.Sms.CONTENT_URI;
 
-        Cursor c = cr.query(Telephony.Sms.Sent.CONTENT_URI, new String[]{
-                Telephony.Sms.Sent.ADDRESS,
-                Telephony.Sms.Sent.BODY,
-                Telephony.Sms.Sent.DATE_SENT},
-                null, null, null);
+        Cursor c = context.getContentResolver().query(u, new String[]{"*"}, null, null, null);
 
-        int addrIndex = c.getColumnIndex(Telephony.Sms.Sent.ADDRESS);
-        int bodyIndex = c.getColumnIndex(Telephony.Sms.Sent.BODY);
-        int dateIndex = c.getColumnIndex(Telephony.Sms.Sent.DATE_SENT);
-
-        ArrayList<Message> buffer = new ArrayList<>();
-
-        while(c.moveToNext() && c.getCount() > 0){
-
-            Message m = new Message(c.getString(addrIndex), c.getString(dateIndex), c.getString(bodyIndex), false);
-            buffer.add(m);
-
+        for(String s: c.getColumnNames()){
+            Log.w("XD", s + "");
         }
 
-        sent = buffer;
+
+
+
     }
 
+    List<Message> getInbox() {
 
-    private void fetchInbox(){
+        ContentResolver cr = context.getContentResolver();
+        Cursor c = cr.query(smsInboxUri, new String[]{"*"}, null, null, null);
 
         ArrayList<Message> ret = new ArrayList<>();
 
+        int addressC = c.getColumnIndex(Telephony.Sms.ADDRESS);
+        int dateC = c.getColumnIndex(Telephony.Sms.DATE);
+        int bodyC = c.getColumnIndex(Telephony.Sms.BODY);
+        int seenC = c.getColumnIndex(Telephony.Sms.SEEN);
 
-        Cursor c = context.getContentResolver().query(inboxUri, new String[]{
-                Telephony.Sms.Inbox._ID,
-                Telephony.Sms.Inbox.ADDRESS,
-                Telephony.Sms.Inbox.DATE,
-                Telephony.Sms.Inbox.BODY,
-                Telephony.Sms.Inbox.SEEN},
-                null, null, null);
-        c.moveToFirst();
+        while(c.getCount() > 0 && c.moveToNext()){
 
-        for(String s: c.getColumnNames())
-            Log.w("COLUMNSNAMES", s +  " ");
 
-        while(c.moveToNext()){
+            String addr = parseAddress(c.getString(addressC));
+            Long date = Long.parseLong(c.getString(dateC));
+            String body = c.getString(bodyC);
+            boolean seen = Boolean.parseBoolean(c.getString(seenC));
 
-            String address = c.getString(1);
-            String date = c.getString(2);
-            String body = c.getString(3);
+            Message msg = new Message(addr, body, date, seen, true);
+            ret.add(msg);
+        }
+        c.close();
 
-            Message m = new Message(address, date, body);
-            ret.add(m);
+        return ret;
+    }
+
+    List<Message> getSent(){
+
+        ContentResolver cr = context.getContentResolver();
+        Cursor c = cr.query(smsSentUri, new String[]{Telephony.Sms.Sent.ADDRESS, Telephony.Sms.Sent.BODY, Telephony.Sms.Sent.DATE}, null, null, null);
+
+        int addrC = c.getColumnIndex(Telephony.Sms.Sent.ADDRESS);
+        int bodyC = c.getColumnIndex(Telephony.Sms.Sent.BODY);
+        int dateC = c.getColumnIndex(Telephony.Sms.Sent.DATE);
+
+        ArrayList<Message> ret = new ArrayList<>();
+
+        while(c.getCount() > 0 && c.moveToNext()){
+
+            String addr = parseAddress(c.getString(addrC));
+            String body = c.getString(bodyC);
+            Long date = Long.parseLong(c.getString(dateC));
+
+            Message msg = new Message(addr, date, body);
+            ret.add(msg);
         }
 
-        inbox = ret;
+        return ret;
+    }
+
+    List<Message> getMessages(){
+
+        ContentResolver cr = context.getContentResolver();
+
+        Uri uri = Telephony.Sms.CONTENT_URI;
+
+        Cursor c = cr.query(uri, new String[]{Telephony.Sms.ADDRESS, Telephony.Sms.BODY, Telephony.Sms.DATE, Telephony.Sms.TYPE}, null, null, null);
+
+        int typeC = c.getColumnIndex(Telephony.Sms.TYPE);
+        int addrC = c.getColumnIndex(Telephony.Sms.ADDRESS);
+        int dateC = c.getColumnIndex(Telephony.Sms.DATE);
+        int bodyC = c.getColumnIndex(Telephony.Sms.BODY);
+
+        List<Message> ret = new ArrayList<>();
+
+        while(c.getCount() > 0 && c.moveToNext()){
+
+            String addr = parseAddress(c.getString(addrC));
+            Long date = Long.parseLong(c.getString(dateC));
+            String body = c.getString(bodyC);
+            int type = Integer.parseInt(c.getString(typeC));
+
+            boolean incoming = !(type == Telephony.Sms.MESSAGE_TYPE_SENT);
+
+            Message msg = new Message(addr, date, body, incoming);
+            ret.add(msg);
+        }
+
+        return ret;
     }
 
     private void init(){
-        fetchSent();
-        fetchInbox();
 
-        List<Message> messages = new ArrayList<>();
-        messages.addAll(inbox);
-        messages.addAll(sent);
+        ArrayList<Message> messages = new ArrayList<>();
 
-        HashMap<String, ArrayList<Message>> map = new HashMap<>();
+//        messages.addAll(getInbox());
+//        messages.addAll(getSent());
+
+        messages.addAll(getMessages());
+
+        HashMap<String, List<Message>> map = new HashMap<>();
 
         for(Message m: messages){
+
             String addr = m.getAddress();
+            List<Message> list = map.computeIfAbsent(addr, k -> new ArrayList<>());
 
-            ArrayList<Message> al = map.get(addr);
-
-            if( al == null)
-                al = new ArrayList<>();
-
-            al.add(m);
-
-            map.put(addr, al);
+            list.add(m);
         }
 
-        map.forEach((k, v) -> v.sort((o1, o2) -> (int) (Long.parseLong(o1.getDate()) - Long.parseLong(o2.getDate()))));
 
 
-        data = map;
+//        map.values().forEach(p -> p.sort(Comparator.naturalOrder()));
+
+        conversations = new ArrayList<>();
+
+        map.forEach((k, v) -> conversations.add(new Conversation(k, v)));
+
+        msgMap = map;
+
     }
 
-    public List<Conversation> getThreadList(){
-
-        ArrayList<Conversation> ret = new ArrayList<>();
-
-        for(Map.Entry<String, ArrayList<Message>> e: data.entrySet()){
-            ret.add(new Conversation(e.getKey(), e.getValue()));
-        }
-
-        return ret;
+    List<Message> getSingleThread(String addr){
+        return msgMap.get(addr);
     }
 
-    public List<Message> getSingleThread(String addr){
-
-        List<Message> ret = data.get(addr);
-
-        if(ret == null)
-            return Collections.emptyList();
-
-        return ret;
+    List<Conversation> getThreadList(){
+        return conversations;
     }
+
+    /**
+     * Removes unneccessary characters from address, such as +48 (number for Poland)
+     * and spaces.
+     *
+     * @param addr Unparsed address
+     * @return Clear address
+     */
+    private String parseAddress(String addr){
+        addr = addr.replaceAll("\\s", "");
+        addr = addr.replaceFirst("\\+48", "");
+
+        return addr;
+    }
+
+
 
 }
 

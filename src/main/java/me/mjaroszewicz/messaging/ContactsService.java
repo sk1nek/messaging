@@ -35,16 +35,9 @@ public class ContactsService {
             while (c.moveToNext()) {
                 if(numberC != -1) {
                     addrToNameMap.put(c.getString(numberC), c.getString(displayNameC));
-                    Log.w("NUM", c.getString(numberC));
                 }
 
             }
-        }
-
-        Log.w("ADDRMAPSIZE", addrToNameMap.size() + "");
-
-        for (Map.Entry<String,String> e: addrToNameMap.entrySet()){
-            Log.w("MAP" ,e.getKey() + "  " + e.getValue());
         }
 
 
