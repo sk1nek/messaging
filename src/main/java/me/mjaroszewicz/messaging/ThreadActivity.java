@@ -2,6 +2,9 @@ package me.mjaroszewicz.messaging;
 
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
+import android.view.View;
+import android.widget.Button;
+import android.widget.EditText;
 import android.widget.ListView;
 import android.widget.Toast;
 import android.widget.Toolbar;
@@ -35,6 +38,11 @@ public class ThreadActivity extends AppCompatActivity {
         ListView lv = findViewById(R.id.messages_view);
         ConversationAdapter adapter = new ConversationAdapter(this, data);
         lv.setAdapter(adapter);
+//
+        EditText et = findViewById(R.id.autoCompleteTextView);
+
+        Button btn = findViewById(R.id.send_sms_button);
+        btn.setOnClickListener(v -> ms.sendMessage(addr, et.getText().toString()));
 
 
 
