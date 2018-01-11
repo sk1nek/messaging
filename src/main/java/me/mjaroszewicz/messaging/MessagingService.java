@@ -5,27 +5,18 @@ import android.content.Context;
 import android.database.Cursor;
 import android.net.Uri;
 import android.provider.Telephony;
-import android.util.Log;
+import android.telephony.SmsManager;
+import android.widget.Toast;
 
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 
 public class MessagingService {
 
-    //TODO - get uri from base class
-
     private final Context context;
-
-    private final static Uri smsInboxUri = Telephony.Sms.Inbox.CONTENT_URI;
-
-    private final static Uri smsSentUri = Telephony.Sms.Sent.CONTENT_URI;
-
-    private final static Uri conversationsUri = Telephony.Sms.Conversations.CONTENT_URI;
 
     private static Map<String, List<Message>> msgMap;
 
@@ -39,71 +30,6 @@ public class MessagingService {
         init();
 
         getMessages();
-
-        //
-//        Uri u = Telephony.Sms.Conversations.CONTENT_URI;
-//
-//        Cursor c = context.getContentResolver().query(u, new String[]{"*"}, null, null, null);
-//
-//        for(String s: c.getColumnNames()){
-//            Log.w("XD", s + "");
-//        }
-
-
-
-
-    }
-
-    List<Message> getInbox() {
-
-        ContentResolver cr = context.getContentResolver();
-        Cursor c = cr.query(smsInboxUri, new String[]{"*"}, null, null, null);
-
-        ArrayList<Message> ret = new ArrayList<>();
-
-        int addressC = c.getColumnIndex(Telephony.Sms.ADDRESS);
-        int dateC = c.getColumnIndex(Telephony.Sms.DATE);
-        int bodyC = c.getColumnIndex(Telephony.Sms.BODY);
-        int seenC = c.getColumnIndex(Telephony.Sms.SEEN);
-
-        while(c.getCount() > 0 && c.moveToNext()){
-
-
-            String addr = parseAddress(c.getString(addressC));
-            Long date = Long.parseLong(c.getString(dateC));
-            String body = c.getString(bodyC);
-            boolean seen = Boolean.parseBoolean(c.getString(seenC));
-
-            Message msg = new Message(addr, body, date, seen, true);
-            ret.add(msg);
-        }
-        c.close();
-
-        return ret;
-    }
-
-    List<Message> getSent(){
-
-        ContentResolver cr = context.getContentResolver();
-        Cursor c = cr.query(smsSentUri, new String[]{Telephony.Sms.Sent.ADDRESS, Telephony.Sms.Sent.BODY, Telephony.Sms.Sent.DATE}, null, null, null);
-
-        int addrC = c.getColumnIndex(Telephony.Sms.Sent.ADDRESS);
-        int bodyC = c.getColumnIndex(Telephony.Sms.Sent.BODY);
-        int dateC = c.getColumnIndex(Telephony.Sms.Sent.DATE);
-
-        ArrayList<Message> ret = new ArrayList<>();
-
-        while(c.getCount() > 0 && c.moveToNext()){
-
-            String addr = parseAddress(c.getString(addrC));
-            String body = c.getString(bodyC);
-            Long date = Long.parseLong(c.getString(dateC));
-
-            Message msg = new Message(addr, date, body);
-            ret.add(msg);
-        }
-
-        return ret;
     }
 
     List<Message> getMessages(){
@@ -141,9 +67,6 @@ public class MessagingService {
 
         ArrayList<Message> messages = new ArrayList<>();
 
-//        messages.addAll(getInbox());
-//        messages.addAll(getSent());
-
         messages.addAll(getMessages());
 
         HashMap<String, List<Message>> map = new HashMap<>();
@@ -155,10 +78,6 @@ public class MessagingService {
 
             list.add(m);
         }
-
-
-
-//        map.values().forEach(p -> p.sort(Comparator.naturalOrder()));
 
         conversations = new ArrayList<>();
 
@@ -191,6 +110,20 @@ public class MessagingService {
         return addr;
     }
 
+    public void sendMessage(String addr, String message){
+
+        try{
+            SmsManager smsManager = SmsManager.getDefault();
+            smsManager.sendTextMessage(addr, null, message, null, null);
+            Toast.makeText(context, "Sent.", Toast.LENGTH_SHORT);
+        }catch(Throwable t){
+            Toast.makeText(context, "Could not send message.", Toast.LENGTH_LONG);
+
+        }
+
+
+
+    }
 
 
 }

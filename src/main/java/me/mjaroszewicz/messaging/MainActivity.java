@@ -2,11 +2,18 @@ package me.mjaroszewicz.messaging;
 
 import android.content.Context;
 import android.content.Intent;
+import android.database.Cursor;
+import android.net.Uri;
 import android.os.Bundle;
+import android.provider.ContactsContract;
+import android.support.design.widget.FloatingActionButton;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
+import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.view.View;
+import android.widget.EditText;
 import android.widget.ListView;
 
 import java.util.ArrayList;
@@ -18,6 +25,10 @@ public class MainActivity extends AppCompatActivity {
     private static Context ctxt;
 
     private ContactsService cs;
+
+    private static EditText sendSelector;
+
+    private static final int RESULT_PICK_CONTACT = 54321;
 
     public static Context getContextInstance(){
         return ctxt;
@@ -58,6 +69,8 @@ public class MainActivity extends AppCompatActivity {
             ctxt.startActivity(i);
         });
 
+        FloatingActionButton fab = findViewById(R.id.floatingActionButton);
+        fab.setOnClickListener(new NewMessageOnClickListener(msgService, this));
 
     }
 
@@ -89,5 +102,47 @@ public class MainActivity extends AppCompatActivity {
             msgService = new MessagingService(this);
 
         return this.msgService;
+    }
+
+    public void pickContact(EditText et) {
+
+        Intent pickerIntent = new Intent(Intent.ACTION_PICK, ContactsContract.CommonDataKinds.Phone.CONTENT_URI);
+        startActivityForResult(pickerIntent, RESULT_PICK_CONTACT);
+
+        sendSelector = et;
+
+    }
+
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+
+        if(resultCode == RESULT_OK){
+            switch (requestCode){
+
+                case RESULT_PICK_CONTACT:
+                    contactPick(data);
+                    break;
+
+            }
+        }
+    }
+
+    private void contactPick(Intent data){
+
+        try{
+            Uri uri = data.getData();
+
+            Cursor c = getContentResolver().query(uri, null, null, null, null);
+            c.moveToFirst();
+
+            String number = c.getString(c.getColumnIndex(ContactsContract.CommonDataKinds.Phone.NUMBER));
+
+            Log.w("PICKER", number);
+
+            sendSelector.setText(number);
+        }catch (Throwable t){
+            Log.e("PCKR", t.getLocalizedMessage());
+        }
+
     }
 }
