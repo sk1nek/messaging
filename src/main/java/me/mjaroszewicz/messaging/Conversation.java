@@ -1,8 +1,13 @@
 package me.mjaroszewicz.messaging;
 
+import android.support.annotation.NonNull;
+
+import java.time.LocalDateTime;
+import java.time.ZoneOffset;
+import java.util.Date;
 import java.util.List;
 
-public class Conversation {
+public class Conversation implements Comparable<Conversation>{
 
     private String contactName;
 
@@ -50,4 +55,13 @@ public class Conversation {
         return ret;
     }
 
+    @Override
+    public int compareTo(@NonNull Conversation o) {
+
+        Long d1 = messages.get(0).getDate();
+        Date dateThis = new Date(d1);
+        Date dateThat = new Date(o.getMessages().get(0).getDate());
+
+        return dateThis.compareTo(dateThat);
+    }
 }

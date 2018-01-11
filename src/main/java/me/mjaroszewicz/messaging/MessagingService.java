@@ -163,6 +163,7 @@ public class MessagingService {
         conversations = new ArrayList<>();
 
         map.forEach((k, v) -> conversations.add(new Conversation(k, v)));
+        conversations.sort(Comparator.reverseOrder());
 
         msgMap = map;
 
