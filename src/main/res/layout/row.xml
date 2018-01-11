@@ -2,7 +2,7 @@
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
               android:orientation="vertical"
               android:layout_width="match_parent"
-              android:layout_height="80dp">
+              android:layout_height="50dp">
 
     <TextView
             android:paddingLeft="@dimen/padding_standard"
@@ -12,11 +12,22 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content" android:id="@+id/thread_row_address" android:textSize="18sp"
             android:textStyle="bold" android:textAlignment="textStart"/>
-    <TextView
-            android:paddingRight="@dimen/padding_standard"
-            android:paddingBottom="@dimen/padding_standard"
-            android:text="TextView"
+
+    <RelativeLayout
+        android:layout_width="match_parent"
+        android:layout_height="30dp">
+        <TextView
+            android:id="@+id/thread_row_content"
+            android:layout_alignParentBottom="true"
             android:layout_width="match_parent"
-            android:layout_height="wrap_content" android:id="@+id/thread_row_content" android:textAlignment="textEnd"
-            android:textStyle="italic"/>
+            android:layout_height="wrap_content"
+            android:paddingBottom="@dimen/padding_standard"
+            android:paddingRight="@dimen/padding_standard"
+            android:text="TextView"
+            android:textAlignment="textEnd"
+            android:textStyle="italic" />
+
+    </RelativeLayout>
+
+
 </LinearLayout>

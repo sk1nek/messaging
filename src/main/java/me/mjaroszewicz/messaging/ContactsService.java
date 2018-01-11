@@ -34,7 +34,12 @@ public class ContactsService {
         if(c.getCount() > 0 ) {
             while (c.moveToNext()) {
                 if(numberC != -1) {
-                    addrToNameMap.put(c.getString(numberC), c.getString(displayNameC));
+
+                    String number = c.getString(numberC).replaceAll("\\s", "");
+
+                    String name = c.getString(displayNameC);
+
+                    addrToNameMap.put(number, name);
                 }
 
             }
@@ -45,6 +50,9 @@ public class ContactsService {
 
     public String getContactName(String addr){
         String ret = addrToNameMap.get(addr);
+
+        if(ret == null)
+            ret = addrToNameMap.get("+48" + addr);
 
         if(ret == null)
             return addr;

@@ -41,13 +41,13 @@ public class MessagingService {
         getMessages();
 
         //
-        Uri u = Telephony.Sms.CONTENT_URI;
-
-        Cursor c = context.getContentResolver().query(u, new String[]{"*"}, null, null, null);
-
-        for(String s: c.getColumnNames()){
-            Log.w("XD", s + "");
-        }
+//        Uri u = Telephony.Sms.Conversations.CONTENT_URI;
+//
+//        Cursor c = context.getContentResolver().query(u, new String[]{"*"}, null, null, null);
+//
+//        for(String s: c.getColumnNames()){
+//            Log.w("XD", s + "");
+//        }
 
 
 

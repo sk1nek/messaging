@@ -38,6 +38,8 @@ public class Conversation implements Comparable<Conversation>{
 
         String msg = messages.get(0).getBody();
 
+        msg.replaceAll("\n", "");
+
         if(msg.length() >= 50)
             return msg.substring(0, 49);
 
